@@ -268,23 +268,10 @@
         </div>
         </main>
 
-        <!-- Scroll to Top Button -->
-        <transition name="fade">
-            <button v-show="showScrollTop" @click="scrollToTop"
-                class="fixed bottom-8 right-8 w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 shadow-lg z-50 cursor-pointer"
-                :class="theme === 'dark' 
-                        ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' 
-                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                        d="M5 10l7-7m0 0l7 7m-7-7v18">
-                    </path>
-                </svg>
-            </button>
-        </transition>
-
         <!-- Floating Control Panel -->
-        <div class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3">
+        <div class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3 transition-opacity duration-300"
+            :class="isHoveringControls ? 'opacity-100' : 'opacity-40'" @mouseenter="isHoveringControls = true"
+            @mouseleave="isHoveringControls = false">
 
             <!-- Theme Toggle Button -->
             <button @click="toggleTheme"
@@ -333,6 +320,42 @@
                 <!-- Label -->
                 <span class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity">
                     {{ layoutMode === 'grid' ? '网格' : '砌砖' }}
+                </span>
+            </button>
+
+            <!-- Scroll to Top Button -->
+            <button @click="scrollToTop"
+                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl group"
+                :class="theme === 'dark' 
+                    ? 'bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/50' 
+                    : 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200'" title="回到顶部">
+                <!-- Icon -->
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M5 10l7-7m0 0l7 7m-7-7v18">
+                    </path>
+                </svg>
+                <!-- Label -->
+                <span class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                    顶部
+                </span>
+            </button>
+
+            <!-- Scroll to Bottom Button -->
+            <button @click="scrollToBottom"
+                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl group"
+                :class="theme === 'dark' 
+                    ? 'bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/50' 
+                    : 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200'" title="前往底部">
+                <!-- Icon -->
+                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3">
+                    </path>
+                </svg>
+                <!-- Label -->
+                <span class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                    底部
                 </span>
             </button>
 
@@ -767,6 +790,7 @@
                     searchQuery: '',
                     theme: 'dark',
                     layoutMode: 'grid', // 'grid' or 'masonry'
+                    isHoveringControls: false,
                     categories: qaData.categories,
                     questions: qaData.questions
                 };
@@ -876,6 +900,13 @@
                 scrollToTop() {
                     window.scrollTo({
                         top: 0,
+                        behavior: 'smooth'
+                    });
+                },
+
+                scrollToBottom() {
+                    window.scrollTo({
+                        top: document.documentElement.scrollHeight,
                         behavior: 'smooth'
                     });
                 },
