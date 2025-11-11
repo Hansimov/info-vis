@@ -1,0 +1,131 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/*.html"
+      - "pages.json"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  check-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check if modified HTML files are in pages.json
+        id: check
+        run: |
+          echo "Checking modified HTML files..."
+
+          # Get modified HTML files
+          MODIFIED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.html$' || true)
+
+          if [ -z "$MODIFIED_FILES" ]; then
+            echo "No HTML files modified"
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Read pages.json and extract html paths
+          PAGES_JSON=$(cat pages.json)
+          SHOULD_DEPLOY=false
+
+          for file in $MODIFIED_FILES; do
+            echo "Checking file: $file"
+            # Check if file path exists in pages.json
+            if echo "$PAGES_JSON" | grep -q "\"\./$file\""; then
+              echo "File $file is in pages.json"
+              SHOULD_DEPLOY=true
+              break
+            fi
+          done
+
+          echo "should_deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        if: steps.check.outputs.should_deploy == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Pages
+        if: steps.check.outputs.should_deploy == 'true'
+        uses: actions/configure-pages@v4
+
+      - name: Build site
+        if: steps.check.outputs.should_deploy == 'true'
+        run: |
+          echo "Building site from pages.json..."
+
+          # Create output directory
+          mkdir -p _site
+
+          # Parse pages.json and copy files to appropriate paths
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          const pages = JSON.parse(fs.readFileSync('pages.json', 'utf8'));
+
+          pages.forEach(item => {
+            const htmlPath = item.html.replace('./', '');
+            const pagePath = item.page;
+            
+            // Create directory structure
+            const targetDir = path.join('_site', pagePath);
+            fs.mkdirSync(targetDir, { recursive: true });
+            
+            // Copy HTML file
+            const targetFile = path.join(targetDir, 'index.html');
+            fs.copyFileSync(htmlPath, targetFile);
+            
+            console.log(\`Copied \${htmlPath} to \${targetFile}\`);
+          });
+
+          // Create a simple index page listing all pages
+          const indexHtml = \`<!DOCTYPE html>
+          <html lang=\"zh-CN\">
+          <head>
+            <meta charset=\"UTF-8\">
+            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+            <title>Info Vis - Index</title>
+            <style>
+              body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+              h1 { color: #333; }
+              ul { list-style: none; padding: 0; }
+              li { margin: 10px 0; }
+              a { color: #0366d6; text-decoration: none; font-size: 18px; }
+              a:hover { text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            <h1>Info Vis Pages</h1>
+            <ul>
+              \${pages.map(p => \`<li><a href=\"\${p.page}\">\${p.page}</a></li>\`).join('')}
+            </ul>
+          </body>
+          </html>\`;
+
+          fs.writeFileSync('_site/index.html', indexHtml);
+          console.log('Created index page');
+          "
+
+      - name: Upload artifact
+        if: steps.check.outputs.should_deploy == 'true'
+        uses: actions/upload-pages-artifact@v3
+
+      - name: Deploy to GitHub Pages
+        if: steps.check.outputs.should_deploy == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
