@@ -7,6 +7,7 @@ on:
     paths:
       - "**/*.html"
       - "pages.json"
+      - ".github/workflows/deploy.yml"
 
 permissions:
   contents: read
@@ -24,29 +25,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check if modified HTML files are in pages.json
+      - name: Check if should deploy
         id: check
         run: |
-          echo "Checking modified HTML files..."
+          # 获取修改的文件
+          MODIFIED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
 
-          # Get modified HTML files
-          MODIFIED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.html$' || true)
+          # 检查是否修改了配置文件
+          if echo "$MODIFIED_FILES" | grep -qE '(pages\.json|\.github/workflows/deploy\.yml)'; then
+            echo "配置文件已修改，触发部署"
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
-          if [ -z "$MODIFIED_FILES" ]; then
-            echo "No HTML files modified"
+          # 检查修改的 HTML 文件是否在 pages.json 中
+          HTML_FILES=$(echo "$MODIFIED_FILES" | grep '\.html$' || true)
+
+          if [ -z "$HTML_FILES" ]; then
+            echo "无相关文件修改"
             echo "should_deploy=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          # Read pages.json and extract html paths
           PAGES_JSON=$(cat pages.json)
           SHOULD_DEPLOY=false
 
-          for file in $MODIFIED_FILES; do
-            echo "Checking file: $file"
-            # Check if file path exists in pages.json
+          for file in $HTML_FILES; do
             if echo "$PAGES_JSON" | grep -q "\"\./$file\""; then
-              echo "File $file is in pages.json"
+              echo "$file 在 pages.json 中，触发部署"
               SHOULD_DEPLOY=true
               break
             fi
@@ -67,33 +73,29 @@ jobs:
       - name: Build site
         if: steps.check.outputs.should_deploy == 'true'
         run: |
-          echo "Building site from pages.json..."
-
-          # Create output directory
           mkdir -p _site
 
-          # Parse pages.json and copy files to appropriate paths
+          # 根据 pages.json 构建站点
           node -e "
           const fs = require('fs');
           const path = require('path');
           const pages = JSON.parse(fs.readFileSync('pages.json', 'utf8'));
 
+          // 复制 HTML 文件到对应路由
           pages.forEach(item => {
             const htmlPath = item.html.replace('./', '');
             const pagePath = item.page;
             
-            // Create directory structure
             const targetDir = path.join('_site', pagePath);
             fs.mkdirSync(targetDir, { recursive: true });
             
-            // Copy HTML file
             const targetFile = path.join(targetDir, 'index.html');
             fs.copyFileSync(htmlPath, targetFile);
             
             console.log(\`Copied \${htmlPath} to \${targetFile}\`);
           });
 
-          // Create a simple index page listing all pages
+          // 生成索引页
           const indexHtml = \`<!DOCTYPE html>
           <html lang=\"zh-CN\">
           <head>
