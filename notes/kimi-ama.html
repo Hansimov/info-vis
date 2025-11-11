@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kimi-AMA - Moonshot AI 问答精选</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.prod.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            850: '#1a202e',
+                            950: '#0d1117',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(30px, -50px) rotate(120deg);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) rotate(240deg);
+            }
+        }
+
+        .animate-float {
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .animate-float-reverse {
+            animation: float 15s ease-in-out infinite reverse;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+
+<body class="transition-colors duration-200">
+
+    <div id="app">
+        <!-- Background Decoration -->
+        <div class="fixed inset-0 pointer-events-none overflow-hidden transition-opacity duration-200"
+            :class="theme === 'dark' ? 'opacity-100' : 'opacity-30'">
+            <div
+                class="absolute -top-1/2 -right-10 w-[800px] h-[800px] rounded-full opacity-15 bg-gradient-radial from-indigo-600 to-transparent animate-float">
+            </div>
+            <div
+                class="absolute -bottom-1/3 -left-10 w-[600px] h-[600px] rounded-full opacity-15 bg-gradient-radial from-cyan-500 to-transparent animate-float-reverse">
+            </div>
+        </div>
+
+        <!-- Container -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 relative z-10">
+
+            <!-- Header -->
+            <header class="mb-10">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">
+                            Kimi AMA
+                        </h1>
+                        <p class="text-sm opacity-60 mb-3">
+                            Moonshot AI 在 r/LocalLLaMA 的问答精选
+                        </p>
+                        <a href="https://www.reddit.com/r/LocalLLaMA/comments/1oth5pw/ama_with_moonshot_ai_the_opensource_frontier_lab"
+                            target="_blank"
+                            class="text-xs opacity-50 hover:opacity-80 transition-opacity duration-200 underline">
+                            查看原帖
+                        </a>
+                    </div>
+                    <!-- Theme Toggle -->
+                    <button @click="toggleTheme"
+                        class="p-2.5 rounded-lg transition-colors duration-200 hover:bg-slate-700/50 dark:hover:bg-slate-200/10"
+                        title="切换主题">
+                        <svg v-if="theme === 'dark'" class="w-5 h-5" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                            </path>
+                        </svg>
+                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Search Bar -->
+            <div class="mb-6">
+                <div class="relative">
+                    <input v-model="searchQuery" type="text" placeholder="搜索问题或答案..."
+                        class="w-full px-4 py-2.5 pl-10 rounded-lg border bg-transparent transition-colors duration-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
+                        :class="theme === 'dark' ? 'border-slate-700 placeholder-slate-500' : 'border-slate-300 placeholder-slate-400'">
+                    <svg class="w-4 h-4 absolute left-3 top-3.5 opacity-40" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <button v-if="searchQuery" @click="searchQuery = ''"
+                        class="absolute right-3 top-2.5 p-1 rounded hover:bg-slate-700/50 dark:hover:bg-slate-200/10 transition-colors duration-200">
+                        <svg class="w-4 h-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div v-if="searchQuery && filteredQuestions.length === 0" class="mt-3 text-sm opacity-50 text-center">
+                    没有找到匹配的结果
+                </div>
+                <div v-if="searchQuery && filteredQuestions.length > 0" class="mt-3 text-xs opacity-50 text-center">
+                    找到 {{ filteredQuestions.length }} 个结果
+                </div>
+            </div>
+
+            <!-- Category Tabs -->
+            <nav class="flex flex-wrap gap-2 mb-10 justify-center">
+                <button v-for="category in categories" :key="category.id" @click="selectedCategory = category.id"
+                    :class="[
+                        'px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200',
+                        selectedCategory === category.id 
+                            ? 'bg-slate-700 text-white dark:bg-slate-700 dark:text-white' 
+                            : 'opacity-50 hover:opacity-100',
+                        theme === 'dark' ? 'bg-slate-800/40 hover:bg-slate-800' : 'bg-slate-200/60 hover:bg-slate-200'
+                    ]">
+                    {{ category.name }}
+                </button>
+            </nav>
+
+            <!-- Q&A Cards -->
+            <main>
+                <!-- Multi-column grid for QA cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                    <div v-for="qa in filteredQuestions" :key="qa.id"
+                        class="group rounded-xl p-6 border transition-all duration-300 relative" :class="theme === 'dark' 
+                            ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600' 
+                            : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300'">
+
+                        <!-- Category badge -->
+                        <div class="absolute top-4 right-4">
+                            <span class="text-xs font-medium uppercase tracking-wider opacity-40">
+                                {{ getCategoryName(qa.category) }}
+                            </span>
+                        </div>
+
+                        <!-- Question -->
+                        <div class="mb-5 pr-20">
+                            <h3 class="text-base font-semibold leading-relaxed">
+                                {{ qa.question }}
+                            </h3>
+                        </div>
+
+                        <!-- Answers -->
+                        <div class="space-y-3">
+                            <div v-for="(answer, index) in qa.answers" :key="index">
+                                <div v-if="answer.items" class="space-y-2 text-sm opacity-80 leading-relaxed">
+                                    <div v-for="(item, i) in answer.items" :key="i">
+                                        <span class="font-medium opacity-60">{{ i + 1 }}.</span> {{ item }}
+                                    </div>
+                                </div>
+                                <p v-else class="text-sm opacity-80 leading-relaxed">
+                                    {{ answer.content }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+        </div>
+        </main>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <transition name="fade">
+        <button v-show="showScrollTop" @click="scrollToTop"
+            class="fixed bottom-8 right-8 w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 shadow-lg z-50 cursor-pointer"
+            :class="theme === 'dark' 
+                    ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' 
+                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18">
+                </path>
+            </svg>
+        </button>
+    </transition>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        // Data Layer
+        const qaData = {
+            categories: [
+                { id: 'all', name: '全部' },
+                { id: 'architecture', name: '架构/训练' },
+                { id: 'inference', name: '推理/效率' },
+                { id: 'model', name: '模型谱系' },
+                { id: 'multimodal', name: '多模态/语音' },
+                { id: 'evaluation', name: '评测/基准' },
+                { id: 'product', name: '产品/生态' },
+                { id: 'context', name: '上下文/多语言' },
+                { id: 'infrastructure', name: '基础设施' },
+                { id: 'values', name: '价值观/其他' }
+            ],
+
+            questions: [
+                {
+                    id: 1,
+                    category: 'architecture',
+                    question: 'KDA 会不会用在下一代旗舰？优势是什么？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            content: 'KDA+NoPE 的混合注意力在我们同尺度的预训练与 RL 对比中，优于用 RoPE 的全 MLA；更快、更省，便于更快预训练与上线、也能服务更多用户。'
+                        },
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: 'KDA 是最新实验架构，历史上混合注意力很难在长输入/长输出上胜过全注意力，但 KDA 在长链式推理 RL 等多场景都有收益，相关思路大概率会用进 K3。'
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    category: 'architecture',
+                    question: '为什么选择 INT4，而不是 FP4？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            content: '为兼容非 Blackwell GPU，并利用现有 INT4 推理内核（Marlin）。另有工程师的中文长文解读。'
+                        }
+                    ]
+                },
+                {
+                    id: 3,
+                    category: 'architecture',
+                    question: '如何选择与验证架构/数据/超参？有哪些"代理指标"？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            items: [
+                                '看 loss、基准分与稳定性"内部指标"。',
+                                '有多尺度的"爬梯"流程，小尺度过关才能上更大尺度；任何异常先停下查明。',
+                                '最重要的超参是学习率/调度；先摸索参数地形再系统搜索。',
+                                '好数据=训练中能带来良好的基准曲线；配比是门艺术，要用直觉开局、用实验收口。'
+                            ]
+                        }
+                    ]
+                },
+                {
+                    id: 4,
+                    category: 'architecture',
+                    question: '为什么用 Muon 这种"未被他人验证"的优化器去到 1T 规模？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            content: '我们在自己的多级缩放流程里把它"烤"过才上大规模；能活下来的只是极少数。'
+                        }
+                    ]
+                },
+                {
+                    id: 5,
+                    category: 'architecture',
+                    question: '模型文风（K2-Instruct 的写作质感）是怎么来的？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '预训练与后训练都在塑造"味道"；不同 RL 配方会有不同"口味"。'
+                        },
+                        {
+                            respondent: 'ppwwyyxx',
+                            content: '写作风格也是后训练数据与评测的重要部分。'
+                        }
+                    ]
+                },
+                {
+                    id: 6,
+                    category: 'architecture',
+                    question: '数据混合是否出现"互相增益/干扰"？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '我们观察到把数据集合在一起时会带来更好的泛化。'
+                        }
+                    ]
+                },
+                {
+                    id: 7,
+                    category: 'inference',
+                    question: 'K2 Thinking 为何单次推理链这么长、用思考 token 多？会优化吗？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '推理时长受 API 吞吐影响，思考 token 数取决于训练策略；我们训练更偏向多思考 token 以求效果。计划把效率（少想但想对）纳入奖励，压缩思维链。K2 Thinking 原生 INT4 + Turbo API 会更快。'
+                        }
+                    ]
+                },
+                {
+                    id: 8,
+                    category: 'inference',
+                    question: '速度与准确性的取舍？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '目前优先"绝对效果"，但确实有提升 token 效率的空间，正在做。'
+                        }
+                    ]
+                },
+                {
+                    id: 9,
+                    category: 'inference',
+                    question: '模型何时能学会"不知道就说不知道"，减少幻觉？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '可通过在 RL 中加入"真实/诚实"奖励解决。'
+                        }
+                    ]
+                },
+                {
+                    id: 10,
+                    category: 'model',
+                    question: '会不会出更小、可单卡/边缘设备运行的权重（如 30B/20B/<10B）？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '已发布 Kimi-Linear-48B-A3B-Instruct，后续可能继续做更小的研究演示并逐步加功能。对于"做 Kimi-linear 级别的 thinking 版"和"24GB 显存 INT4 原生"的建议已记录。'
+                        }
+                    ]
+                },
+                {
+                    id: 11,
+                    category: 'model',
+                    question: '有没有"小显存友好"的 Kimi Linear 变体？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            content: '尚未亲测，但 Cerebras 有 35B 的专家合并（expert-merged）Kimi-Linear 变体可参考。'
+                        }
+                    ]
+                },
+                {
+                    id: 12,
+                    category: 'model',
+                    question: '为什么 K2 选择 1T 总参数 / ~32B 激活？是否存在"涌现"的临界点？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '在既定训练预算下寻求近似最优配置；稀疏度来自实证缩放实验。详见 K2 论文。'
+                        }
+                    ]
+                },
+                {
+                    id: 13,
+                    category: 'model',
+                    question: 'K3 何时？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '"在 Sam 的万亿美元数据中心建成之前。"（玩笑式回答）'
+                        }
+                    ]
+                },
+                {
+                    id: 14,
+                    category: 'model',
+                    question: '是否会出 120B MoE、100B 给"GPU 贫民"？',
+                    answers: [
+                        {
+                            respondent: '团队',
+                            content: '多处回应为"收到/考虑"。'
+                        }
+                    ]
+                },
+                {
+                    id: 15,
+                    category: 'multimodal',
+                    question: 'K2 会有 VL（视觉-语言）吗？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '在做了，先发文本版是因为 VL 的数据与训练要打磨更久。'
+                        }
+                    ]
+                },
+                {
+                    id: 16,
+                    category: 'multimodal',
+                    question: '像 DeepSeek-OCR / z.ai glyphs 那样"像素端到端"（pixel-only）如何？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            content: '个人看法是过于"刻意"，更倾向在特征空间内找更通用、跨模态的高效方法。'
+                        }
+                    ]
+                },
+                {
+                    id: 17,
+                    category: 'multimodal',
+                    question: '稀疏注意力（MoBA/DSA）是否已可规模化部署？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            content: '稀疏注意力肯定在雷达上，我们会按自己的节奏推进研究。'
+                        }
+                    ]
+                },
+                {
+                    id: 18,
+                    category: 'evaluation',
+                    question: 'K2 Thinking 在 LiveBench 出现异常低分？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '疑似第三方代理端点导致显著精度下降（我们复测掉了 20+ 个百分点）；对方将重测。'
+                        }
+                    ]
+                },
+                {
+                    id: 19,
+                    category: 'evaluation',
+                    question: 'K2 非思考版为何表现这么好？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            content: '"爱与汗水"；可参考 K2 技术报告。'
+                        }
+                    ]
+                },
+                {
+                    id: 20,
+                    category: 'product',
+                    question: 'Kimi for Coding 的计费按"请求数"不透明，会优化吗？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '按请求计费与成本更贴合、也更直观；但你提到的问题很合理，我们会尽快改进。'
+                        }
+                    ]
+                },
+                {
+                    id: 21,
+                    category: 'product',
+                    question: '有没有像 z.ai 的订阅/编码计划？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            content: 'Kimi 会员包含 Kimi For Coding 计划，可查看官网。'
+                        }
+                    ]
+                },
+                {
+                    id: 22,
+                    category: 'product',
+                    question: 'Agentic 模式与"思维-工具-思维"交错会怎样支持？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '我们用端到端的 agentic RL 训练，能产生数百步的工具调用链并在中间步骤（含检索）表现更好；完整版（比聊天里更强）将很快在 OK Computer 里提供，适合科研与编程。'
+                        }
+                    ]
+                },
+                {
+                    id: 23,
+                    category: 'product',
+                    question: '是否会合并 Playground 与 API 的文件上传行为、完善文档？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '收到，会去改进。'
+                        }
+                    ]
+                },
+                {
+                    id: 24,
+                    category: 'context',
+                    question: '会不会把上下文拉到 1M？多语言（尤其欧洲语种）计划？',
+                    answers: [
+                        {
+                            respondent: 'zxytim',
+                            content: '做过 1M，但当时推理太贵，未来会再看长上下文。当前主攻中英；多语言要看带宽与精力，也欢迎社区共建数据。'
+                        }
+                    ]
+                },
+                {
+                    id: 25,
+                    category: 'context',
+                    question: '未来会提升 256K 上限吗？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '未来版本应能提升。'
+                        }
+                    ]
+                },
+                {
+                    id: 26,
+                    category: 'infrastructure',
+                    question: '训练集群与硬件？能与美方大厂比吗？',
+                    answers: [
+                        {
+                            respondent: 'ppwwyyxx',
+                            content: '我们用 H800 + InfiniBand；不如美国的高端卡、数量也处于下风，但每张卡都用到极致。'
+                        }
+                    ]
+                },
+                {
+                    id: 27,
+                    category: 'infrastructure',
+                    question: '工程栈有什么"想换"的/不满意的？',
+                    answers: [
+                        {
+                            respondent: 'ppwwyyxx',
+                            content: '对 TensorBoard 颇多抱怨：扩展、管理大量实验、精确显示（非下采样）都不顺——已做了内改，但替代品也难找。'
+                        }
+                    ]
+                },
+                {
+                    id: 28,
+                    category: 'values',
+                    question: '如何减少"拍马屁式"的过度恭维？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '让模型呈现不同"口味"是好事，未来会更偏多样化。'
+                        }
+                    ]
+                },
+                {
+                    id: 29,
+                    category: 'values',
+                    question: 'K2 为何更少"八股/硝酸味（slop）"？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '这与我们在数据与评测上的取向有关，我们也在继续压降"套话感"。'
+                        }
+                    ]
+                },
+                {
+                    id: 30,
+                    category: 'values',
+                    question: '是否会出更"封闭"的专有大模型？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '"如果变得太危险就会。"（打趣）'
+                        }
+                    ]
+                },
+                {
+                    id: 31,
+                    category: 'values',
+                    question: 'AGI 时间表？',
+                    answers: [
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: 'AGI 很难定义，但"感觉"在靠近；更强的模型在路上。'
+                        }
+                    ]
+                },
+                {
+                    id: 32,
+                    category: 'values',
+                    question: '为何开源？以及"被某些公司/地区禁用"的担忧？',
+                    answers: [
+                        {
+                            respondent: 'ppwwyyxx',
+                            content: '开源能缓解顾虑，企业可自部署；建立信任需要时间。'
+                        },
+                        {
+                            respondent: 'ComfortableAsk4494',
+                            content: '我们希望 AGI 的追求能"联合而非分裂"。'
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Application
+        createApp({
+            data() {
+                return {
+                    selectedCategory: 'all',
+                    showScrollTop: false,
+                    searchQuery: '',
+                    theme: 'dark',
+                    categories: qaData.categories,
+                    questions: qaData.questions
+                };
+            },
+
+            computed: {
+                filteredQuestions() {
+                    let filtered = this.questions;
+
+                    // Filter by category
+                    if (this.selectedCategory !== 'all') {
+                        filtered = filtered.filter(q => q.category === this.selectedCategory);
+                    }
+
+                    // Filter by search query
+                    if (this.searchQuery.trim()) {
+                        const query = this.searchQuery.toLowerCase().trim();
+                        filtered = filtered.filter(q => {
+                            // Search in question
+                            if (q.question.toLowerCase().includes(query)) {
+                                return true;
+                            }
+                            // Search in answers
+                            return q.answers.some(answer => {
+                                if (answer.content && answer.content.toLowerCase().includes(query)) {
+                                    return true;
+                                }
+                                if (answer.items) {
+                                    return answer.items.some(item => item.toLowerCase().includes(query));
+                                }
+                                return false;
+                            });
+                        });
+                    }
+
+                    return filtered;
+                }
+            },
+
+            mounted() {
+                window.addEventListener('scroll', this.handleScroll);
+                // Load theme from localStorage
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                this.theme = savedTheme;
+                this.applyTheme();
+            },
+
+            beforeUnmount() {
+                window.removeEventListener('scroll', this.handleScroll);
+            },
+
+            methods: {
+                getCategoryName(categoryId) {
+                    const category = this.categories.find(c => c.id === categoryId);
+                    return category ? category.name : '';
+                },
+
+                handleScroll() {
+                    this.showScrollTop = window.pageYOffset > 300;
+                },
+
+                scrollToTop() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                },
+
+                toggleTheme() {
+                    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+                    this.applyTheme();
+                    localStorage.setItem('theme', this.theme);
+                },
+
+                applyTheme() {
+                    if (this.theme === 'dark') {
+                        document.documentElement.classList.add('dark');
+                        document.body.classList.add('bg-slate-900', 'text-slate-100');
+                        document.body.classList.remove('bg-slate-50', 'text-slate-900');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        document.body.classList.remove('bg-slate-900', 'text-slate-100');
+                        document.body.classList.add('bg-slate-50', 'text-slate-900');
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+
+    <style>
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.3s;
+        }
+
+        .fade-enter-from,
+        .fade-leave-to {
+            opacity: 0;
+        }
+
+        .bg-gradient-radial {
+            background: radial-gradient(circle, currentColor 0%, transparent 70%);
+        }
+    </style>
+</body>
+
+</html>
+</body>
+
+</html>
