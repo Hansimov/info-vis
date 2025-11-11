@@ -154,33 +154,39 @@
                 <!-- Multi-column grid for QA cards -->
                 <div v-if="layoutMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
                     <div v-for="qa in filteredQuestions" :key="qa.id"
-                        class="group rounded-xl p-6 border transition-all duration-300 flex flex-col hover:shadow-xl hover:-translate-y-1 h-full"
+                        class="group rounded-xl p-6 border-2 transition-all duration-300 flex flex-col hover:shadow-2xl hover:-translate-y-2 h-full relative overflow-hidden"
                         :class="theme === 'dark' 
-                            ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600 hover:shadow-indigo-500/10' 
-                            : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-slate-300/50'">
+                            ? 'bg-slate-800/30 border-slate-700/60 hover:bg-slate-800/50 hover:border-slate-700' 
+                            : 'bg-white/60 border-slate-300/60 hover:bg-white hover:border-slate-300'">
+
+                        <!-- Gradient overlay on hover -->
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                            :style="{ background: `radial-gradient(circle at top left, ${getCategoryColor(qa.category)}08, transparent 70%)` }">
+                        </div>
 
                         <!-- Category badge at top-left -->
-                        <div class="mb-4">
+                        <div class="mb-4 relative z-10">
                             <span
-                                class="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border transition-colors duration-200"
+                                class="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border transition-all duration-200 group-hover:shadow-md"
                                 :class="theme === 'dark' 
-                                    ? 'bg-slate-800/60 border-slate-700/50 text-slate-400' 
-                                    : 'bg-slate-100 border-slate-300 text-slate-600'">
-                                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                    ? 'bg-slate-800/60 border-slate-700/50 text-slate-400 group-hover:border-slate-600' 
+                                    : 'bg-slate-100 border-slate-300 text-slate-600 group-hover:border-slate-400'">
+                                <span
+                                    class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-transform duration-200 group-hover:scale-125"
                                     :style="{ backgroundColor: getCategoryColor(qa.category) }"></span>
                                 {{ getCategoryName(qa.category) }}
                             </span>
                         </div>
 
                         <!-- Question -->
-                        <div class="mb-5">
-                            <h3 class="text-base font-semibold leading-relaxed"
+                        <div class="mb-5 relative z-10">
+                            <h3 class="text-base font-semibold leading-relaxed transition-colors duration-200"
                                 v-html="highlightKeywords(qa.question, qa.keywords)">
                             </h3>
                         </div>
 
                         <!-- Answers -->
-                        <div class="space-y-3 mb-4 flex-grow">
+                        <div class="space-y-3 mb-4 flex-grow relative z-10">
                             <div v-for="(answer, index) in qa.answers" :key="index">
                                 <div v-if="answer.items" class="space-y-2 text-sm opacity-80 leading-relaxed">
                                     <div v-for="(item, i) in answer.items" :key="i">
@@ -195,10 +201,11 @@
                         </div>
 
                         <!-- Keywords at bottom-left -->
-                        <div class="pt-3 mt-auto">
+                        <div class="pt-3 mt-auto relative z-10">
                             <div class="flex flex-wrap gap-1.5">
                                 <span v-for="keyword in qa.keywords" :key="keyword"
-                                    class="text-xs px-2 py-0.5 rounded transition-colors duration-200" :class="theme === 'dark' 
+                                    class="text-xs px-2 py-0.5 rounded transition-all duration-200 hover:scale-105"
+                                    :class="theme === 'dark' 
                                         ? 'bg-slate-700/40 text-slate-400 hover:bg-slate-700/60' 
                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
                                     {{ keyword }}
@@ -211,33 +218,39 @@
                 <!-- Masonry layout for QA cards -->
                 <div v-else class="masonry-container mb-16">
                     <div v-for="qa in filteredQuestions" :key="qa.id"
-                        class="masonry-item group rounded-xl p-6 border transition-all duration-300 flex flex-col hover:shadow-xl hover:-translate-y-1"
+                        class="masonry-item group rounded-xl p-6 border-2 transition-all duration-300 flex flex-col hover:shadow-2xl hover:-translate-y-2 relative overflow-hidden"
                         :class="theme === 'dark' 
-                            ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600 hover:shadow-indigo-500/10' 
-                            : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-slate-300/50'">
+                            ? 'bg-slate-800/30 border-slate-700/60 hover:bg-slate-800/50 hover:border-slate-700' 
+                            : 'bg-white/60 border-slate-300/60 hover:bg-white hover:border-slate-300'">
+
+                        <!-- Gradient overlay on hover -->
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                            :style="{ background: `radial-gradient(circle at top left, ${getCategoryColor(qa.category)}08, transparent 70%)` }">
+                        </div>
 
                         <!-- Category badge at top-left -->
-                        <div class="mb-4">
+                        <div class="mb-4 relative z-10">
                             <span
-                                class="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border transition-colors duration-200"
+                                class="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border transition-all duration-200 group-hover:shadow-md"
                                 :class="theme === 'dark' 
-                                    ? 'bg-slate-800/60 border-slate-700/50 text-slate-400' 
-                                    : 'bg-slate-100 border-slate-300 text-slate-600'">
-                                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                    ? 'bg-slate-800/60 border-slate-700/50 text-slate-400 group-hover:border-slate-600' 
+                                    : 'bg-slate-100 border-slate-300 text-slate-600 group-hover:border-slate-400'">
+                                <span
+                                    class="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-transform duration-200 group-hover:scale-125"
                                     :style="{ backgroundColor: getCategoryColor(qa.category) }"></span>
                                 {{ getCategoryName(qa.category) }}
                             </span>
                         </div>
 
                         <!-- Question -->
-                        <div class="mb-5">
-                            <h3 class="text-base font-semibold leading-relaxed"
+                        <div class="mb-5 relative z-10">
+                            <h3 class="text-base font-semibold leading-relaxed transition-colors duration-200"
                                 v-html="highlightKeywords(qa.question, qa.keywords)">
                             </h3>
                         </div>
 
                         <!-- Answers -->
-                        <div class="space-y-3 mb-4">
+                        <div class="space-y-3 mb-4 relative z-10">
                             <div v-for="(answer, index) in qa.answers" :key="index">
                                 <div v-if="answer.items" class="space-y-2 text-sm opacity-80 leading-relaxed">
                                     <div v-for="(item, i) in answer.items" :key="i">
@@ -252,10 +265,11 @@
                         </div>
 
                         <!-- Keywords at bottom-left -->
-                        <div class="pt-3">
+                        <div class="pt-3 relative z-10">
                             <div class="flex flex-wrap gap-1.5">
                                 <span v-for="keyword in qa.keywords" :key="keyword"
-                                    class="text-xs px-2 py-0.5 rounded transition-colors duration-200" :class="theme === 'dark' 
+                                    class="text-xs px-2 py-0.5 rounded transition-all duration-200 hover:scale-105"
+                                    :class="theme === 'dark' 
                                         ? 'bg-slate-700/40 text-slate-400 hover:bg-slate-700/60' 
                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
                                     {{ keyword }}
@@ -269,92 +283,255 @@
         </main>
 
         <!-- Floating Control Panel -->
-        <div class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3 transition-opacity duration-300"
-            :class="isHoveringControls ? 'opacity-100' : 'opacity-40'" @mouseenter="isHoveringControls = true"
-            @mouseleave="isHoveringControls = false">
+        <!-- Hover trigger area for narrow screens -->
+        <div class="fixed right-0 top-1/2 -translate-y-1/2 w-16 h-64 z-40 xl:hidden group/trigger">
+            <div class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3 
+                translate-x-16 group-hover/trigger:translate-x-0 transition-transform duration-300">
+
+                <!-- Theme Toggle Button -->
+                <button @click="toggleTheme"
+                    class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-300 shadow-lg group relative overflow-hidden"
+                    :class="theme === 'dark' 
+                    ? 'bg-slate-800/40 hover:bg-slate-800 text-slate-200/60 hover:text-slate-200 border border-slate-700/30 hover:border-slate-600' 
+                    : 'bg-white/40 hover:bg-white text-slate-700/60 hover:text-slate-700 border border-slate-200/50 hover:border-slate-300'"
+                    :title="theme === 'dark' ? '切换到亮色主题' : '切换到暗色主题'">
+                    <!-- Gradient overlay on hover -->
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        :class="theme === 'dark' 
+                        ? 'bg-gradient-to-br from-indigo-500/10 to-purple-500/10' 
+                        : 'bg-gradient-to-br from-indigo-500/5 to-purple-500/5'">
+                    </div>
+                    <!-- Icon -->
+                    <svg v-if="theme === 'dark'"
+                        class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
+                    <svg v-else
+                        class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                    <!-- Label -->
+                    <span
+                        class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
+                        {{ theme === 'dark' ? '暗色' : '亮色' }}
+                    </span>
+                </button>
+
+                <!-- Layout Toggle Button -->
+                <button @click="toggleLayout"
+                    class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-300 shadow-lg group relative overflow-hidden"
+                    :class="theme === 'dark' 
+                ? 'bg-slate-800/40 hover:bg-slate-800 text-slate-200/60 hover:text-slate-200 border border-slate-700/30 hover:border-slate-600' 
+                : 'bg-white/40 hover:bg-white text-slate-700/60 hover:text-slate-700 border border-slate-200/50 hover:border-slate-300'"
+                    :title="layoutMode === 'grid' ? '切换到砌砖布局' : '切换到网格布局'">
+                    <!-- Gradient overlay on hover -->
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        :class="theme === 'dark' 
+                        ? 'bg-gradient-to-br from-cyan-500/10 to-teal-500/10' 
+                        : 'bg-gradient-to-br from-cyan-500/5 to-teal-500/5'">
+                    </div>
+                    <!-- Icon -->
+                    <svg v-if="layoutMode === 'grid'"
+                        class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                        </path>
+                    </svg>
+                    <svg v-else
+                        class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 12a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z">
+                        </path>
+                    </svg>
+                    <!-- Label -->
+                    <span
+                        class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
+                        {{ layoutMode === 'grid' ? '网格' : '砌砖' }}
+                    </span>
+                </button>
+
+                <!-- Scroll to Top Button -->
+                <button @click="scrollToTop"
+                    class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-300 shadow-lg group relative overflow-hidden"
+                    :class="theme === 'dark' 
+                    ? 'bg-slate-800/40 hover:bg-slate-800 text-slate-200/60 hover:text-slate-200 border border-slate-700/30 hover:border-slate-600' 
+                    : 'bg-white/40 hover:bg-white text-slate-700/60 hover:text-slate-700 border border-slate-200/50 hover:border-slate-300'"
+                    title="回到顶部">
+                    <!-- Gradient overlay on hover -->
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        :class="theme === 'dark' 
+                        ? 'bg-gradient-to-br from-emerald-500/10 to-green-500/10' 
+                        : 'bg-gradient-to-br from-emerald-500/5 to-green-500/5'">
+                    </div>
+                    <!-- Icon -->
+                    <svg class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M5 10l7-7m0 0l7 7m-7-7v18">
+                        </path>
+                    </svg>
+                    <!-- Label -->
+                    <span
+                        class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
+                        顶部
+                    </span>
+                </button>
+
+                <!-- Scroll to Bottom Button -->
+                <button @click="scrollToBottom"
+                    class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-300 shadow-lg group relative overflow-hidden"
+                    :class="theme === 'dark' 
+                    ? 'bg-slate-800/40 hover:bg-slate-800 text-slate-200/60 hover:text-slate-200 border border-slate-700/30 hover:border-slate-600' 
+                    : 'bg-white/40 hover:bg-white text-slate-700/60 hover:text-slate-700 border border-slate-200/50 hover:border-slate-300'"
+                    title="前往底部">
+                    <!-- Gradient overlay on hover -->
+                    <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        :class="theme === 'dark' 
+                        ? 'bg-gradient-to-br from-amber-500/10 to-orange-500/10' 
+                        : 'bg-gradient-to-br from-amber-500/5 to-orange-500/5'">
+                    </div>
+                    <!-- Icon -->
+                    <svg class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110 group-hover:translate-y-0.5"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M19 14l-7 7m0 0l-7-7m7 7V3">
+                        </path>
+                    </svg>
+                    <!-- Label -->
+                    <span
+                        class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
+                        底部
+                    </span>
+                </button>
+
+            </div>
+        </div>
+
+        <!-- Floating Control Panel for wide screens -->
+        <div class="hidden xl:flex fixed right-4 top-1/2 -translate-y-1/2 z-40 flex-col gap-3">
 
             <!-- Theme Toggle Button -->
             <button @click="toggleTheme"
-                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl group"
+                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-300 shadow-lg group relative overflow-hidden"
                 :class="theme === 'dark' 
-                ? 'bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/50' 
-                : 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200'"
+                ? 'bg-slate-800/40 hover:bg-slate-800 text-slate-200/60 hover:text-slate-200 border border-slate-700/30 hover:border-slate-600' 
+                : 'bg-white/40 hover:bg-white text-slate-700/60 hover:text-slate-700 border border-slate-200/50 hover:border-slate-300'"
                 :title="theme === 'dark' ? '切换到亮色主题' : '切换到暗色主题'">
+                <!-- Gradient overlay on hover -->
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" :class="theme === 'dark' 
+                        ? 'bg-gradient-to-br from-indigo-500/10 to-purple-500/10' 
+                        : 'bg-gradient-to-br from-indigo-500/5 to-purple-500/5'">
+                </div>
                 <!-- Icon -->
-                <svg v-if="theme === 'dark'" class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
+                <svg v-if="theme === 'dark'"
+                    class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
                     </path>
                 </svg>
-                <svg v-else class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg v-else class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
                     </path>
                 </svg>
                 <!-- Label -->
-                <span class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                <span
+                    class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
                     {{ theme === 'dark' ? '暗色' : '亮色' }}
                 </span>
             </button>
 
             <!-- Layout Toggle Button -->
             <button @click="toggleLayout"
-                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl group"
+                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-300 shadow-lg group relative overflow-hidden"
                 :class="theme === 'dark' 
-                ? 'bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/50' 
-                : 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200'"
+                ? 'bg-slate-800/40 hover:bg-slate-800 text-slate-200/60 hover:text-slate-200 border border-slate-700/30 hover:border-slate-600' 
+                : 'bg-white/40 hover:bg-white text-slate-700/60 hover:text-slate-700 border border-slate-200/50 hover:border-slate-300'"
                 :title="layoutMode === 'grid' ? '切换到砌砖布局' : '切换到网格布局'">
+                <!-- Gradient overlay on hover -->
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" :class="theme === 'dark' 
+                        ? 'bg-gradient-to-br from-cyan-500/10 to-teal-500/10' 
+                        : 'bg-gradient-to-br from-cyan-500/5 to-teal-500/5'">
+                </div>
                 <!-- Icon -->
-                <svg v-if="layoutMode === 'grid'" class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
+                <svg v-if="layoutMode === 'grid'"
+                    class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                        d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z">
                     </path>
                 </svg>
-                <svg v-else class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg v-else class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 12a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z">
                     </path>
                 </svg>
                 <!-- Label -->
-                <span class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                <span
+                    class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
                     {{ layoutMode === 'grid' ? '网格' : '砌砖' }}
                 </span>
             </button>
 
             <!-- Scroll to Top Button -->
             <button @click="scrollToTop"
-                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl group"
+                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-300 shadow-lg group relative overflow-hidden"
                 :class="theme === 'dark' 
-                    ? 'bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/50' 
-                    : 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200'" title="回到顶部">
+                    ? 'bg-slate-800/40 hover:bg-slate-800 text-slate-200/60 hover:text-slate-200 border border-slate-700/30 hover:border-slate-600' 
+                    : 'bg-white/40 hover:bg-white text-slate-700/60 hover:text-slate-700 border border-slate-200/50 hover:border-slate-300'"
+                title="回到顶部">
+                <!-- Gradient overlay on hover -->
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" :class="theme === 'dark' 
+                        ? 'bg-gradient-to-br from-emerald-500/10 to-green-500/10' 
+                        : 'bg-gradient-to-br from-emerald-500/5 to-green-500/5'">
+                </div>
                 <!-- Icon -->
-                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                         d="M5 10l7-7m0 0l7 7m-7-7v18">
                     </path>
                 </svg>
                 <!-- Label -->
-                <span class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                <span
+                    class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
                     顶部
                 </span>
             </button>
 
             <!-- Scroll to Bottom Button -->
             <button @click="scrollToBottom"
-                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl group"
+                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-300 shadow-lg group relative overflow-hidden"
                 :class="theme === 'dark' 
-                    ? 'bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/50' 
-                    : 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200'" title="前往底部">
+                    ? 'bg-slate-800/40 hover:bg-slate-800 text-slate-200/60 hover:text-slate-200 border border-slate-700/30 hover:border-slate-600' 
+                    : 'bg-white/40 hover:bg-white text-slate-700/60 hover:text-slate-700 border border-slate-200/50 hover:border-slate-300'"
+                title="前往底部">
+                <!-- Gradient overlay on hover -->
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" :class="theme === 'dark' 
+                        ? 'bg-gradient-to-br from-amber-500/10 to-orange-500/10' 
+                        : 'bg-gradient-to-br from-amber-500/5 to-orange-500/5'">
+                </div>
                 <!-- Icon -->
-                <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 mb-0.5 relative z-10 transition-transform duration-300 group-hover:scale-110 group-hover:translate-y-0.5"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                         d="M19 14l-7 7m0 0l-7-7m7 7V3">
                     </path>
                 </svg>
                 <!-- Label -->
-                <span class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                <span
+                    class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity relative z-10">
                     底部
                 </span>
             </button>
@@ -790,7 +967,6 @@
                     searchQuery: '',
                     theme: 'dark',
                     layoutMode: 'grid', // 'grid' or 'masonry'
-                    isHoveringControls: false,
                     categories: qaData.categories,
                     questions: qaData.questions
                 };
