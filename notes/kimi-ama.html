@@ -150,9 +150,8 @@
                     :class="[
                         'px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200',
                         selectedCategory === category.id 
-                            ? 'bg-slate-700 text-white dark:bg-slate-700 dark:text-white' 
-                            : 'opacity-50 hover:opacity-100',
-                        theme === 'dark' ? 'bg-slate-800/40 hover:bg-slate-800' : 'bg-slate-200/60 hover:bg-slate-200'
+                            ? (theme === 'dark' ? 'bg-slate-700 text-white' : 'bg-slate-800 text-white')
+                            : (theme === 'dark' ? 'bg-slate-800/40 hover:bg-slate-800 opacity-50 hover:opacity-100' : 'bg-slate-200 hover:bg-slate-300 opacity-60 hover:opacity-100')
                     ]">
                     {{ category.name }}
                 </button>
@@ -163,35 +162,54 @@
                 <!-- Multi-column grid for QA cards -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
                     <div v-for="qa in filteredQuestions" :key="qa.id"
-                        class="group rounded-xl p-6 border transition-all duration-300 relative" :class="theme === 'dark' 
+                        class="group rounded-xl p-6 border transition-all duration-300 flex flex-col" :class="theme === 'dark' 
                             ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600' 
                             : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300'">
 
-                        <!-- Category badge -->
-                        <div class="absolute top-4 right-4">
-                            <span class="text-xs font-medium uppercase tracking-wider opacity-40">
+                        <!-- Category badge at top-left -->
+                        <div class="mb-4">
+                            <span
+                                class="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border transition-colors duration-200"
+                                :class="theme === 'dark' 
+                                    ? 'bg-slate-800/60 border-slate-700/50 text-slate-400' 
+                                    : 'bg-slate-100 border-slate-300 text-slate-600'">
+                                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                    :style="{ backgroundColor: getCategoryColor(qa.category) }"></span>
                                 {{ getCategoryName(qa.category) }}
                             </span>
                         </div>
 
                         <!-- Question -->
-                        <div class="mb-5 pr-20">
-                            <h3 class="text-base font-semibold leading-relaxed">
-                                {{ qa.question }}
+                        <div class="mb-5 flex-grow">
+                            <h3 class="text-base font-semibold leading-relaxed"
+                                v-html="highlightKeywords(qa.question, qa.keywords)">
                             </h3>
                         </div>
 
                         <!-- Answers -->
-                        <div class="space-y-3">
+                        <div class="space-y-3 mb-4">
                             <div v-for="(answer, index) in qa.answers" :key="index">
                                 <div v-if="answer.items" class="space-y-2 text-sm opacity-80 leading-relaxed">
                                     <div v-for="(item, i) in answer.items" :key="i">
-                                        <span class="font-medium opacity-60">{{ i + 1 }}.</span> {{ item }}
+                                        <span class="font-medium opacity-60">{{ i + 1 }}.</span>
+                                        <span v-html="highlightKeywords(item, qa.keywords)"></span>
                                     </div>
                                 </div>
-                                <p v-else class="text-sm opacity-80 leading-relaxed">
-                                    {{ answer.content }}
+                                <p v-else class="text-sm opacity-80 leading-relaxed"
+                                    v-html="highlightKeywords(answer.content, qa.keywords)">
                                 </p>
+                            </div>
+                        </div>
+
+                        <!-- Keywords at bottom-left -->
+                        <div class="pt-3">
+                            <div class="flex flex-wrap gap-1.5">
+                                <span v-for="keyword in qa.keywords" :key="keyword"
+                                    class="text-xs px-2 py-0.5 rounded transition-colors duration-200" :class="theme === 'dark' 
+                                        ? 'bg-slate-700/40 text-slate-400 hover:bg-slate-700/60' 
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+                                    {{ keyword }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -239,6 +257,7 @@
                     id: 1,
                     category: 'architecture',
                     question: 'KDA 会不会用在下一代旗舰？优势是什么？',
+                    keywords: ['KDA', 'NoPE', 'RoPE', 'MLA', 'K3'],
                     answers: [
                         {
                             respondent: 'zxytim',
@@ -254,6 +273,7 @@
                     id: 2,
                     category: 'architecture',
                     question: '为什么选择 INT4，而不是 FP4？',
+                    keywords: ['INT4', 'FP4', 'Blackwell', 'Marlin'],
                     answers: [
                         {
                             respondent: 'zxytim',
@@ -265,15 +285,11 @@
                     id: 3,
                     category: 'architecture',
                     question: '如何选择与验证架构/数据/超参？有哪些"代理指标"？',
+                    keywords: ['架构', '数据', '超参', 'loss', '学习率'],
                     answers: [
                         {
                             respondent: 'zxytim',
-                            items: [
-                                '看 loss、基准分与稳定性"内部指标"。',
-                                '有多尺度的"爬梯"流程，小尺度过关才能上更大尺度；任何异常先停下查明。',
-                                '最重要的超参是学习率/调度；先摸索参数地形再系统搜索。',
-                                '好数据=训练中能带来良好的基准曲线；配比是门艺术，要用直觉开局、用实验收口。'
-                            ]
+                            content: '(1) 看 loss、基准分与稳定性"内部指标"。(2) 有多尺度的"爬梯"流程，小尺度过关才能上更大尺度；任何异常先停下查明。(3) 最重要的超参是学习率/调度；先摸索参数地形再系统搜索。(4) 好数据=训练中能带来良好的基准曲线；配比是门艺术，要用直觉开局、用实验收口。'
                         }
                     ]
                 },
@@ -281,6 +297,7 @@
                     id: 4,
                     category: 'architecture',
                     question: '为什么用 Muon 这种"未被他人验证"的优化器去到 1T 规模？',
+                    keywords: ['Muon', '优化器', '1T', '缩放'],
                     answers: [
                         {
                             respondent: 'zxytim',
@@ -292,6 +309,7 @@
                     id: 5,
                     category: 'architecture',
                     question: '模型文风（K2-Instruct 的写作质感）是怎么来的？',
+                    keywords: ['文风', 'K2-Instruct', 'RL', '预训练', '后训练'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -307,6 +325,7 @@
                     id: 6,
                     category: 'architecture',
                     question: '数据混合是否出现"互相增益/干扰"？',
+                    keywords: ['数据混合', '泛化'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -318,6 +337,7 @@
                     id: 7,
                     category: 'inference',
                     question: 'K2 Thinking 为何单次推理链这么长、用思考 token 多？会优化吗？',
+                    keywords: ['K2 Thinking', '推理链', 'token', 'INT4', 'Turbo API'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -329,6 +349,7 @@
                     id: 8,
                     category: 'inference',
                     question: '速度与准确性的取舍？',
+                    keywords: ['速度', '准确性', 'token效率'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -340,6 +361,7 @@
                     id: 9,
                     category: 'inference',
                     question: '模型何时能学会"不知道就说不知道"，减少幻觉？',
+                    keywords: ['幻觉', 'RL', '诚实奖励'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -351,6 +373,7 @@
                     id: 10,
                     category: 'model',
                     question: '会不会出更小、可单卡/边缘设备运行的权重（如 30B/20B/<10B）？',
+                    keywords: ['Kimi-Linear', '48B', 'A3B', '小模型', '边缘设备'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -362,6 +385,7 @@
                     id: 11,
                     category: 'model',
                     question: '有没有"小显存友好"的 Kimi Linear 变体？',
+                    keywords: ['Kimi Linear', '35B', 'Cerebras', 'expert-merged'],
                     answers: [
                         {
                             respondent: 'zxytim',
@@ -373,6 +397,7 @@
                     id: 12,
                     category: 'model',
                     question: '为什么 K2 选择 1T 总参数 / ~32B 激活？是否存在"涌现"的临界点？',
+                    keywords: ['K2', '1T参数', '32B激活', 'MoE', '稀疏度'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -384,6 +409,7 @@
                     id: 13,
                     category: 'model',
                     question: 'K3 何时？',
+                    keywords: ['K3'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -395,6 +421,7 @@
                     id: 14,
                     category: 'model',
                     question: '是否会出 120B MoE、100B 给"GPU 贫民"？',
+                    keywords: ['120B', '100B', 'MoE', 'GPU'],
                     answers: [
                         {
                             respondent: '团队',
@@ -406,6 +433,7 @@
                     id: 15,
                     category: 'multimodal',
                     question: 'K2 会有 VL（视觉-语言）吗？',
+                    keywords: ['VL', '视觉-语言', '多模态'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -417,6 +445,7 @@
                     id: 16,
                     category: 'multimodal',
                     question: '像 DeepSeek-OCR / z.ai glyphs 那样"像素端到端"（pixel-only）如何？',
+                    keywords: ['DeepSeek-OCR', 'pixel-only', '端到端', '特征空间'],
                     answers: [
                         {
                             respondent: 'zxytim',
@@ -428,6 +457,7 @@
                     id: 17,
                     category: 'multimodal',
                     question: '稀疏注意力（MoBA/DSA）是否已可规模化部署？',
+                    keywords: ['稀疏注意力', 'MoBA', 'DSA'],
                     answers: [
                         {
                             respondent: 'zxytim',
@@ -439,6 +469,7 @@
                     id: 18,
                     category: 'evaluation',
                     question: 'K2 Thinking 在 LiveBench 出现异常低分？',
+                    keywords: ['LiveBench', '评测', '精度下降'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -450,6 +481,7 @@
                     id: 19,
                     category: 'evaluation',
                     question: 'K2 非思考版为何表现这么好？',
+                    keywords: ['K2', '技术报告'],
                     answers: [
                         {
                             respondent: 'zxytim',
@@ -461,6 +493,7 @@
                     id: 20,
                     category: 'product',
                     question: 'Kimi for Coding 的计费按"请求数"不透明，会优化吗？',
+                    keywords: ['Kimi for Coding', '计费', '请求数'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -472,6 +505,7 @@
                     id: 21,
                     category: 'product',
                     question: '有没有像 z.ai 的订阅/编码计划？',
+                    keywords: ['Kimi会员', 'Kimi For Coding', '订阅'],
                     answers: [
                         {
                             respondent: 'zxytim',
@@ -483,6 +517,7 @@
                     id: 22,
                     category: 'product',
                     question: 'Agentic 模式与"思维-工具-思维"交错会怎样支持？',
+                    keywords: ['Agentic', 'RL', 'OK Computer', '工具调用'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -494,6 +529,7 @@
                     id: 23,
                     category: 'product',
                     question: '是否会合并 Playground 与 API 的文件上传行为、完善文档？',
+                    keywords: ['Playground', 'API', '文档'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -505,6 +541,7 @@
                     id: 24,
                     category: 'context',
                     question: '会不会把上下文拉到 1M？多语言（尤其欧洲语种）计划？',
+                    keywords: ['1M上下文', '多语言', '中英'],
                     answers: [
                         {
                             respondent: 'zxytim',
@@ -516,6 +553,7 @@
                     id: 25,
                     category: 'context',
                     question: '未来会提升 256K 上限吗？',
+                    keywords: ['256K', '上下文'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -527,6 +565,7 @@
                     id: 26,
                     category: 'infrastructure',
                     question: '训练集群与硬件？能与美方大厂比吗？',
+                    keywords: ['H800', 'InfiniBand', '训练集群'],
                     answers: [
                         {
                             respondent: 'ppwwyyxx',
@@ -538,6 +577,7 @@
                     id: 27,
                     category: 'infrastructure',
                     question: '工程栈有什么"想换"的/不满意的？',
+                    keywords: ['TensorBoard', '工程栈'],
                     answers: [
                         {
                             respondent: 'ppwwyyxx',
@@ -549,6 +589,7 @@
                     id: 28,
                     category: 'values',
                     question: '如何减少"拍马屁式"的过度恭维？',
+                    keywords: ['模型风格', '多样化'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -560,6 +601,7 @@
                     id: 29,
                     category: 'values',
                     question: 'K2 为何更少"八股/硝酸味（slop）"？',
+                    keywords: ['数据评测', '套话感'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -571,6 +613,7 @@
                     id: 30,
                     category: 'values',
                     question: '是否会出更"封闭"的专有大模型？',
+                    keywords: ['专有模型', '开源'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -582,6 +625,7 @@
                     id: 31,
                     category: 'values',
                     question: 'AGI 时间表？',
+                    keywords: ['AGI', '时间表'],
                     answers: [
                         {
                             respondent: 'ComfortableAsk4494',
@@ -593,6 +637,7 @@
                     id: 32,
                     category: 'values',
                     question: '为何开源？以及"被某些公司/地区禁用"的担忧？',
+                    keywords: ['开源', '信任'],
                     answers: [
                         {
                             respondent: 'ppwwyyxx',
@@ -633,6 +678,11 @@
                     if (this.searchQuery.trim()) {
                         const query = this.searchQuery.toLowerCase().trim();
                         filtered = filtered.filter(q => {
+                            // Search in category
+                            const categoryName = this.getCategoryName(q.category);
+                            if (categoryName.toLowerCase().includes(query)) {
+                                return true;
+                            }
                             // Search in question
                             if (q.question.toLowerCase().includes(query)) {
                                 return true;
@@ -670,6 +720,46 @@
                 getCategoryName(categoryId) {
                     const category = this.categories.find(c => c.id === categoryId);
                     return category ? category.name : '';
+                },
+
+                getCategoryColor(categoryId) {
+                    const colors = {
+                        'architecture': '#8B5CF6',      // violet
+                        'inference': '#06B6D4',         // cyan
+                        'model': '#10B981',             // emerald
+                        'multimodal': '#F59E0B',        // amber
+                        'evaluation': '#EC4899',        // pink
+                        'product': '#3B82F6',           // blue
+                        'context': '#14B8A6',           // teal
+                        'infrastructure': '#6366F1',    // indigo
+                        'values': '#F97316'             // orange
+                    };
+                    return colors[categoryId] || '#64748B'; // default slate
+                },
+
+                highlightKeywords(text, keywords) {
+                    if (!text || !keywords || keywords.length === 0) {
+                        return text;
+                    }
+
+                    let highlightedText = text;
+
+                    // Sort keywords by length (longest first) to avoid partial matches
+                    const sortedKeywords = [...keywords].sort((a, b) => b.length - a.length);
+
+                    sortedKeywords.forEach(keyword => {
+                        // Create a regex to match the keyword (case-insensitive, whole word)
+                        const regex = new RegExp(`(${keyword})`, 'gi');
+
+                        // Replace with highlighted version
+                        const highlightClass = this.theme === 'dark'
+                            ? 'text-indigo-300 font-medium px-0.5 rounded'
+                            : 'text-indigo-700 font-medium px-0.5 rounded';
+
+                        highlightedText = highlightedText.replace(regex, `<span class="${highlightClass}">$1</span>`);
+                    });
+
+                    return highlightedText;
                 },
 
                 handleScroll() {
