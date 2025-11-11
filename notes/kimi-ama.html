@@ -84,36 +84,28 @@
 
             <!-- Header -->
             <header class="mb-10">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold mb-2">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <h1 class="text-3xl font-bold">
                             Kimi AMA
                         </h1>
-                        <p class="text-sm opacity-60 mb-3">
-                            Moonshot AI 在 r/LocalLLaMA 的问答精选
-                        </p>
                         <a href="https://www.reddit.com/r/LocalLLaMA/comments/1oth5pw/ama_with_moonshot_ai_the_opensource_frontier_lab"
                             target="_blank"
-                            class="text-xs opacity-50 hover:opacity-80 transition-opacity duration-200 underline">
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border"
+                            :class="theme === 'dark' 
+                                ? 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:bg-slate-800 hover:border-slate-600' 
+                                : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 hover:border-slate-400'">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+                                </path>
+                            </svg>
                             查看原帖
                         </a>
                     </div>
-                    <!-- Theme Toggle -->
-                    <button @click="toggleTheme"
-                        class="p-2.5 rounded-lg transition-colors duration-200 hover:bg-slate-700/50 dark:hover:bg-slate-200/10"
-                        title="切换主题">
-                        <svg v-if="theme === 'dark'" class="w-5 h-5" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                            </path>
-                        </svg>
-                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
-                            </path>
-                        </svg>
-                    </button>
+                    <p class="text-sm opacity-60 w-full">
+                        Moonshot AI 在 r/LocalLLaMA 的问答精选
+                    </p>
                 </div>
             </header>
 
@@ -145,7 +137,7 @@
             </div>
 
             <!-- Category Tabs -->
-            <nav class="flex flex-wrap gap-2 mb-6 justify-center">
+            <nav class="flex flex-wrap gap-2 mb-10 justify-center">
                 <button v-for="category in categories" :key="category.id" @click="selectedCategory = category.id"
                     :class="[
                         'px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200',
@@ -156,39 +148,6 @@
                     {{ category.name }}
                 </button>
             </nav>
-
-            <!-- Layout Toggle -->
-            <div class="flex justify-center mb-10">
-                <div class="inline-flex rounded-lg border p-1 transition-colors duration-200"
-                    :class="theme === 'dark' ? 'bg-slate-800/40 border-slate-700/50' : 'bg-slate-100 border-slate-300'">
-                    <button @click="layoutMode = 'grid'" :class="[
-                            'px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2',
-                            layoutMode === 'grid'
-                                ? (theme === 'dark' ? 'bg-slate-700 text-white' : 'bg-white text-slate-900 shadow-sm')
-                                : (theme === 'dark' ? 'text-slate-400 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900')
-                        ]">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
-                            </path>
-                        </svg>
-                        网格
-                    </button>
-                    <button @click="layoutMode = 'masonry'" :class="[
-                            'px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2',
-                            layoutMode === 'masonry'
-                                ? (theme === 'dark' ? 'bg-slate-700 text-white' : 'bg-white text-slate-900 shadow-sm')
-                                : (theme === 'dark' ? 'text-slate-400 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900')
-                        ]">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 12a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z">
-                            </path>
-                        </svg>
-                        砌砖
-                    </button>
-                </div>
-            </div>
 
             <!-- Q&A Cards -->
             <main>
@@ -308,21 +267,77 @@
 
         </div>
         </main>
-    </div>
 
-    <!-- Scroll to Top Button -->
-    <transition name="fade">
-        <button v-show="showScrollTop" @click="scrollToTop"
-            class="fixed bottom-8 right-8 w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 shadow-lg z-50 cursor-pointer"
-            :class="theme === 'dark' 
-                    ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' 
-                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18">
-                </path>
-            </svg>
-        </button>
-    </transition>
+        <!-- Scroll to Top Button -->
+        <transition name="fade">
+            <button v-show="showScrollTop" @click="scrollToTop"
+                class="fixed bottom-8 right-8 w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-200 shadow-lg z-50 cursor-pointer"
+                :class="theme === 'dark' 
+                        ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' 
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M5 10l7-7m0 0l7 7m-7-7v18">
+                    </path>
+                </svg>
+            </button>
+        </transition>
+
+        <!-- Floating Control Panel -->
+        <div class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3">
+
+            <!-- Theme Toggle Button -->
+            <button @click="toggleTheme"
+                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl group"
+                :class="theme === 'dark' 
+                ? 'bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/50' 
+                : 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200'"
+                :title="theme === 'dark' ? '切换到亮色主题' : '切换到暗色主题'">
+                <!-- Icon -->
+                <svg v-if="theme === 'dark'" class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                    </path>
+                </svg>
+                <svg v-else class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                </svg>
+                <!-- Label -->
+                <span class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                    {{ theme === 'dark' ? '暗色' : '亮色' }}
+                </span>
+            </button>
+
+            <!-- Layout Toggle Button -->
+            <button @click="toggleLayout"
+                class="w-12 h-12 rounded-lg flex flex-col items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl group"
+                :class="theme === 'dark' 
+                ? 'bg-slate-800/90 hover:bg-slate-800 text-slate-200 border border-slate-700/50' 
+                : 'bg-white/90 hover:bg-white text-slate-700 border border-slate-200'"
+                :title="layoutMode === 'grid' ? '切换到砌砖布局' : '切换到网格布局'">
+                <!-- Icon -->
+                <svg v-if="layoutMode === 'grid'" class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                    </path>
+                </svg>
+                <svg v-else class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 12a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z">
+                    </path>
+                </svg>
+                <!-- Label -->
+                <span class="text-[10px] font-medium opacity-60 group-hover:opacity-100 transition-opacity">
+                    {{ layoutMode === 'grid' ? '网格' : '砌砖' }}
+                </span>
+            </button>
+
+        </div>
+
     </div>
 
     <script>
@@ -869,6 +884,10 @@
                     this.theme = this.theme === 'dark' ? 'light' : 'dark';
                     this.applyTheme();
                     localStorage.setItem('theme', this.theme);
+                },
+
+                toggleLayout() {
+                    this.layoutMode = this.layoutMode === 'grid' ? 'masonry' : 'grid';
                 },
 
                 applyTheme() {
