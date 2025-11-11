@@ -145,7 +145,7 @@
             </div>
 
             <!-- Category Tabs -->
-            <nav class="flex flex-wrap gap-2 mb-10 justify-center">
+            <nav class="flex flex-wrap gap-2 mb-6 justify-center">
                 <button v-for="category in categories" :key="category.id" @click="selectedCategory = category.id"
                     :class="[
                         'px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200',
@@ -157,14 +157,48 @@
                 </button>
             </nav>
 
+            <!-- Layout Toggle -->
+            <div class="flex justify-center mb-10">
+                <div class="inline-flex rounded-lg border p-1 transition-colors duration-200"
+                    :class="theme === 'dark' ? 'bg-slate-800/40 border-slate-700/50' : 'bg-slate-100 border-slate-300'">
+                    <button @click="layoutMode = 'grid'" :class="[
+                            'px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2',
+                            layoutMode === 'grid'
+                                ? (theme === 'dark' ? 'bg-slate-700 text-white' : 'bg-white text-slate-900 shadow-sm')
+                                : (theme === 'dark' ? 'text-slate-400 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900')
+                        ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                            </path>
+                        </svg>
+                        网格
+                    </button>
+                    <button @click="layoutMode = 'masonry'" :class="[
+                            'px-4 py-1.5 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2',
+                            layoutMode === 'masonry'
+                                ? (theme === 'dark' ? 'bg-slate-700 text-white' : 'bg-white text-slate-900 shadow-sm')
+                                : (theme === 'dark' ? 'text-slate-400 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900')
+                        ]">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 12a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z">
+                            </path>
+                        </svg>
+                        砌砖
+                    </button>
+                </div>
+            </div>
+
             <!-- Q&A Cards -->
             <main>
                 <!-- Multi-column grid for QA cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+                <div v-if="layoutMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
                     <div v-for="qa in filteredQuestions" :key="qa.id"
-                        class="group rounded-xl p-6 border transition-all duration-300 flex flex-col" :class="theme === 'dark' 
-                            ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600' 
-                            : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300'">
+                        class="group rounded-xl p-6 border transition-all duration-300 flex flex-col hover:shadow-xl hover:-translate-y-1 h-full"
+                        :class="theme === 'dark' 
+                            ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600 hover:shadow-indigo-500/10' 
+                            : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-slate-300/50'">
 
                         <!-- Category badge at top-left -->
                         <div class="mb-4">
@@ -180,7 +214,64 @@
                         </div>
 
                         <!-- Question -->
-                        <div class="mb-5 flex-grow">
+                        <div class="mb-5">
+                            <h3 class="text-base font-semibold leading-relaxed"
+                                v-html="highlightKeywords(qa.question, qa.keywords)">
+                            </h3>
+                        </div>
+
+                        <!-- Answers -->
+                        <div class="space-y-3 mb-4 flex-grow">
+                            <div v-for="(answer, index) in qa.answers" :key="index">
+                                <div v-if="answer.items" class="space-y-2 text-sm opacity-80 leading-relaxed">
+                                    <div v-for="(item, i) in answer.items" :key="i">
+                                        <span class="font-medium opacity-60">{{ i + 1 }}.</span>
+                                        <span v-html="highlightKeywords(item, qa.keywords)"></span>
+                                    </div>
+                                </div>
+                                <p v-else class="text-sm opacity-80 leading-relaxed"
+                                    v-html="highlightKeywords(answer.content, qa.keywords)">
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Keywords at bottom-left -->
+                        <div class="pt-3 mt-auto">
+                            <div class="flex flex-wrap gap-1.5">
+                                <span v-for="keyword in qa.keywords" :key="keyword"
+                                    class="text-xs px-2 py-0.5 rounded transition-colors duration-200" :class="theme === 'dark' 
+                                        ? 'bg-slate-700/40 text-slate-400 hover:bg-slate-700/60' 
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'">
+                                    {{ keyword }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Masonry layout for QA cards -->
+                <div v-else class="masonry-container mb-16">
+                    <div v-for="qa in filteredQuestions" :key="qa.id"
+                        class="masonry-item group rounded-xl p-6 border transition-all duration-300 flex flex-col hover:shadow-xl hover:-translate-y-1"
+                        :class="theme === 'dark' 
+                            ? 'bg-slate-800/30 border-slate-700/50 hover:bg-slate-800/50 hover:border-slate-600 hover:shadow-indigo-500/10' 
+                            : 'bg-white/60 border-slate-200 hover:bg-white hover:border-slate-300 hover:shadow-slate-300/50'">
+
+                        <!-- Category badge at top-left -->
+                        <div class="mb-4">
+                            <span
+                                class="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider px-2.5 py-1 rounded-md border transition-colors duration-200"
+                                :class="theme === 'dark' 
+                                    ? 'bg-slate-800/60 border-slate-700/50 text-slate-400' 
+                                    : 'bg-slate-100 border-slate-300 text-slate-600'">
+                                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                                    :style="{ backgroundColor: getCategoryColor(qa.category) }"></span>
+                                {{ getCategoryName(qa.category) }}
+                            </span>
+                        </div>
+
+                        <!-- Question -->
+                        <div class="mb-5">
                             <h3 class="text-base font-semibold leading-relaxed"
                                 v-html="highlightKeywords(qa.question, qa.keywords)">
                             </h3>
@@ -660,6 +751,7 @@
                     showScrollTop: false,
                     searchQuery: '',
                     theme: 'dark',
+                    layoutMode: 'grid', // 'grid' or 'masonry'
                     categories: qaData.categories,
                     questions: qaData.questions
                 };
@@ -807,6 +899,29 @@
 
         .bg-gradient-radial {
             background: radial-gradient(circle, currentColor 0%, transparent 70%);
+        }
+
+        /* Masonry layout styles */
+        .masonry-container {
+            column-count: 1;
+            column-gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .masonry-container {
+                column-count: 2;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .masonry-container {
+                column-count: 3;
+            }
+        }
+
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
         }
     </style>
 </body>
