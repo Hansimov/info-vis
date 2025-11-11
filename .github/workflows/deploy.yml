@@ -24,25 +24,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Check if should deploy
         id: check
         run: |
-          # 获取修改的文件
-          MODIFIED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          # Get modified files
+          MODIFIED_FILES=$(git diff --name-only HEAD^ HEAD 2>/dev/null || git diff-tree --no-commit-id --name-only -r HEAD)
 
-          # 检查是否修改了配置文件
+          # Deploy if config files changed
           if echo "$MODIFIED_FILES" | grep -qE '(pages\.json|\.github/workflows/deploy\.yml)'; then
-            echo "配置文件已修改，触发部署"
+            echo "Config files modified, deploying"
             echo "should_deploy=true" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          # 检查修改的 HTML 文件是否在 pages.json 中
+          # Check if HTML files are in pages.json
           HTML_FILES=$(echo "$MODIFIED_FILES" | grep '\.html$' || true)
 
           if [ -z "$HTML_FILES" ]; then
-            echo "无相关文件修改"
+            echo "No relevant files modified"
             echo "should_deploy=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -52,7 +54,7 @@ jobs:
 
           for file in $HTML_FILES; do
             if echo "$PAGES_JSON" | grep -q "\"\./$file\""; then
-              echo "$file 在 pages.json 中，触发部署"
+              echo "$file found in pages.json, deploying"
               SHOULD_DEPLOY=true
               break
             fi
@@ -75,13 +77,13 @@ jobs:
         run: |
           mkdir -p _site
 
-          # 根据 pages.json 构建站点
+          # Build site from pages.json
           node -e "
           const fs = require('fs');
           const path = require('path');
           const pages = JSON.parse(fs.readFileSync('pages.json', 'utf8'));
 
-          // 复制 HTML 文件到对应路由
+          // Copy HTML files to routes
           pages.forEach(item => {
             const htmlPath = item.html.replace('./', '');
             const pagePath = item.page;
@@ -95,7 +97,7 @@ jobs:
             console.log(\`Copied \${htmlPath} to \${targetFile}\`);
           });
 
-          // 生成索引页
+          // Generate index page
           const indexHtml = \`<!DOCTYPE html>
           <html lang=\"zh-CN\">
           <head>
